@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Head from 'next/head';
 
 // Este componente é apenas para a parte visual do site.
 // Toda a lógica de API foi removida.
@@ -22,11 +21,7 @@ export default function HomePage() {
   return (
     // Para que o visual funcione, certifique-se que o Tailwind CSS está configurado no seu projeto.
     <div className="bg-gray-50 text-gray-800 font-sans">
-      <Head>
-        <title>Laudocar - Consultas Veiculares</title>
-        <meta name="description" content="Consulte o histórico completo de qualquer veículo de forma rápida e confiável." />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      {/* O <Head> foi removido daqui e agora é gerido pelo layout.js */}
 
       {/* Header e Navegação */}
       <header className={`fixed top-0 left-0 w-full z-50 text-white shadow-md transition-colors duration-300 ${headerScrolled ? 'bg-blue-900' : 'bg-blue-900/80 backdrop-blur-sm'}`}>
