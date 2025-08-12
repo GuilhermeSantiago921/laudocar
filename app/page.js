@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
-// Ícones podem ser de uma biblioteca como react-icons
-// Ex: import { FaShoppingCart, FaBars } from 'react-icons/fa';
+// Ícones do Font Awesome (exemplo)
+import { FaShoppingCart, FaBars } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 
 // Componente principal da página
 export default function HomePage() {
@@ -13,6 +15,21 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [headerScrolled, setHeaderScrolled] = useState(false);
+
+  // Efeito para o header com scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setHeaderScrolled(true);
+      } else {
+        setHeaderScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
 
   // Função para lidar com a consulta da placa
   const handleConsultaPlaca = async (e) => {
@@ -27,6 +44,7 @@ export default function HomePage() {
     setResultado(null);
 
     try {
+      // CHAMADA CORRETA PARA A API NEXT.JS
       const response = await fetch('/api/consultar-placa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -48,14 +66,16 @@ export default function HomePage() {
   };
 
   // Função para lidar com o processo de compra
-  const handleComprar = async (productId, priceId) => {
+  const handleComprar = async (priceId) => {
       if (placa.length < 7) {
           alert('Por favor, consulte uma placa antes de contratar.');
           return;
       }
       
       setLoading(true);
+      setError('');
       try {
+          // CHAMADA CORRETA PARA A API DE CHECKOUT
           const response = await fetch('/api/checkout', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -70,7 +90,8 @@ export default function HomePage() {
           }
       } catch (err) {
           setError('Erro ao iniciar pagamento: ' + err.message);
-          setLoading(false);
+      } finally {
+        setLoading(false);
       }
   };
 
@@ -84,7 +105,7 @@ export default function HomePage() {
       </Head>
 
       {/* Header */}
-      <header className="fixed top-0 left-0 w-full z-50 bg-blue-900/80 backdrop-blur-sm text-white shadow-md">
+      <header className={`fixed top-0 left-0 w-full z-50 text-white shadow-md transition-colors duration-300 ${headerScrolled ? 'bg-blue-900' : 'bg-blue-900/80 backdrop-blur-sm'}`}>
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <a href="#" className="text-2xl font-bold">Laudocar</a>
           <nav className="hidden md:flex items-center space-x-8">
@@ -108,6 +129,7 @@ export default function HomePage() {
       <main>
         {/* Seção Hero */}
         <section
+          id="inicio"
           className="min-h-screen bg-cover bg-center flex items-center justify-center text-white"
           style={{ backgroundImage: "linear-gradient(rgba(0, 85, 164, 0.8), rgba(0, 85, 164, 0.8)), url('https://autocredcardesevolvimento.com.br/wp-content/uploads/2025/08/Gemini_Generated_Image_yki723yki723yki7.png')" }}
         >
@@ -125,7 +147,7 @@ export default function HomePage() {
                 maxLength="7"
                 className="px-6 py-3 rounded-lg text-gray-800 w-full sm:w-80 focus:ring-4 focus:ring-yellow-400/50 focus:outline-none"
               />
-              <button type="submit" disabled={loading} className="px-8 py-3 bg-yellow-400 text-blue-900 font-bold rounded-lg hover:bg-yellow-500 transition-colors disabled:bg-gray-400">
+              <button type="submit" disabled={loading} className="px-8 py-3 bg-yellow-400 text-blue-900 font-bold rounded-lg hover:bg-yellow-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
                 {loading ? 'Consultando...' : 'Consultar'}
               </button>
             </form>
@@ -151,7 +173,7 @@ export default function HomePage() {
                             <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Restrições</li>
                             <li className="flex items-center"><span className="text-red-400 mr-2">✗</span> Roubo e Furto</li>
                         </ul>
-                        <button onClick={() => handleComprar('prod_XXXX', 'price_XXXX_basico')} className="w-full py-3 bg-blue-800 text-white font-bold rounded-lg hover:bg-blue-900">Contratar</button>
+                        <button onClick={() => handleComprar('price_XXXX_basico')} className="w-full py-3 bg-blue-800 text-white font-bold rounded-lg hover:bg-blue-900">Contratar</button>
                     </div>
                     {/* Plano 2 - Destaque */}
                     <div className="bg-blue-900 text-white p-8 rounded-xl shadow-2xl transform scale-105 border-t-4 border-yellow-400">
@@ -162,7 +184,7 @@ export default function HomePage() {
                             <li className="flex items-center"><span className="text-green-400 mr-2">✓</span> Histórico de Roubo e Furto</li>
                             <li className="flex items-center"><span className="text-green-400 mr-2">✓</span> Indício de Sinistro</li>
                         </ul>
-                        <button onClick={() => handleComprar('prod_YYYY', 'price_YYYY_completo')} className="w-full py-3 bg-yellow-400 text-blue-900 font-bold rounded-lg hover:bg-yellow-500">Contratar</button>
+                        <button onClick={() => handleComprar('price_YYYY_completo')} className="w-full py-3 bg-yellow-400 text-blue-900 font-bold rounded-lg hover:bg-yellow-500">Contratar</button>
                     </div>
                     {/* Plano 3 */}
                     <div className="bg-white p-8 rounded-xl shadow-lg border-t-4 border-gray-200">
@@ -173,14 +195,11 @@ export default function HomePage() {
                             <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Histórico de Leilão</li>
                             <li className="flex items-center"><span className="text-green-500 mr-2">✓</span> Análise de Chassi</li>
                         </ul>
-                        <button onClick={() => handleComprar('prod_ZZZZ', 'price_ZZZZ_premium')} className="w-full py-3 bg-blue-800 text-white font-bold rounded-lg hover:bg-blue-900">Contratar</button>
+                        <button onClick={() => handleComprar('price_ZZZZ_premium')} className="w-full py-3 bg-blue-800 text-white font-bold rounded-lg hover:bg-blue-900">Contratar</button>
                     </div>
                 </div>
             </div>
         </section>
-        
-        {/* Adicione outras seções (Como Funciona, FAQ, Contato) aqui, seguindo o mesmo padrão de estilo. */}
-
       </main>
     </div>
   );
