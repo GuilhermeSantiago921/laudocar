@@ -3,17 +3,14 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-// Use a sua chave secreta do Stripe. Guarde-a em variáveis de ambiente!
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error('*** ERRO FATAL: A chave secreta do Stripe (STRIPE_SECRET_KEY) não está configurada.');
 }
 
-// No App Router, a função exportada chama-se POST, GET, etc.
 export async function POST(request) {
   try {
-    // O corpo do pedido é obtido com request.json()
     const { priceId, placa } = await request.json();
 
     if (!priceId || !placa) {
@@ -23,7 +20,6 @@ export async function POST(request) {
     const origin = request.headers.get('origin') || 'http://localhost:3000';
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || origin;
 
-    // Cria a sessão de checkout no Stripe
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -41,7 +37,6 @@ export async function POST(request) {
       cancel_url: `${baseUrl}/`,
     });
 
-    // Retorna a URL da sessão de pagamento
     return NextResponse.json({ url: session.url }, { status: 200 });
 
   } catch (err) {
